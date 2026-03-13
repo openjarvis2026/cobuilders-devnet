@@ -1,4 +1,4 @@
-# CoBi Chain 🔗
+# CoBuilders Chain 🔗
 
 CoBuilders' persistent development chain — an Anvil fork of Base Mainnet running on Railway.
 
@@ -15,7 +15,7 @@ A fork of Base Mainnet with all protocols (Uniswap, Aave, Safe, etc.) available 
 ### Metamask Setup
 
 1. Settings → Networks → Add Network
-2. Network Name: `CoBi Chain`
+2. Network Name: `CoBuilders Chain`
 3. RPC URL: your Railway URL
 4. Chain ID: `31337`
 5. Currency Symbol: `ETH`
@@ -59,8 +59,8 @@ Anvil generates 10 deterministic accounts, each with 10,000 ETH:
 
 ### Local
 ```bash
-docker build -t cobi-chain .
-docker run -p 8545:8545 -e FORK_URL=https://mainnet.base.org cobi-chain
+docker build -t cobuilders-chain .
+docker run -p 8545:8545 -e FORK_URL=https://mainnet.base.org cobuilders-chain
 ```
 
 ## Reset State

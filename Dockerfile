@@ -1,13 +1,49 @@
-FROM ghcr.io/foundry-rs/foundry:latest
+FROM ghcr.io/foundry-rs/foundry:latest AS foundry
 
-USER root
+# ========== Build SE-2 ==========
+FROM node:20-slim AS builder
 
-# Install nginx and envsubst (gettext)
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+RUN corepack enable
+
+WORKDIR /build
+RUN git clone --depth 1 https://github.com/scaffold-eth/scaffold-eth-2.git .
+
+# Copy our custom config and chain definition
+COPY scaffold-eth/scaffold.config.ts packages/nextjs/scaffold.config.ts
+COPY scaffold-eth/cobuildersChain.ts packages/nextjs/utils/scaffold-eth/cobuildersChain.ts
+
+# Install dependencies and build
+RUN yarn install --immutable || yarn install
+
+ENV NEXT_TELEMETRY_DISABLED=1
+# Allow build even with type warnings
+ENV NEXT_PUBLIC_IGNORE_BUILD_ERROR=true
+RUN yarn workspace @se-2/nextjs build
+
+# ========== Runtime ==========
+FROM node:20-slim
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     nginx \
-    gettext-base \
     wget \
+    ca-certificates \
+    gettext-base \
   && rm -rf /var/lib/apt/lists/*
+
+# Copy anvil
+COPY --from=foundry /usr/local/bin/anvil /usr/local/bin/anvil
+
+# Copy built Next.js app
+WORKDIR /app
+COPY --from=builder /build/packages/nextjs/.next ./.next
+COPY --from=builder /build/packages/nextjs/public ./public
+COPY --from=builder /build/packages/nextjs/package.json ./package.json
+COPY --from=builder /build/packages/nextjs/node_modules ./node_modules
+COPY --from=builder /build/packages/nextjs/next.config.ts ./next.config.ts
+
+# Copy nginx config template
+COPY nginx.conf.template /etc/nginx/sites-available/default.template
 
 # Environment variables
 ENV NETWORK_NAME=Devnet
@@ -18,13 +54,6 @@ ENV PORT=8080
 ENV ACCOUNTS=10
 ENV BALANCE=10000
 
-# Copy nginx config template
-COPY nginx.conf.template /etc/nginx/conf.d/default.conf.template
-
-# Copy UI
-COPY www/ /var/www/html/
-
-# Copy entrypoint
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

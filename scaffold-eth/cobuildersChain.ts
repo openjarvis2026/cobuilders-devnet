@@ -2,7 +2,9 @@ import { defineChain } from "viem";
 
 /**
  * CoBuilders Devnet chain definition.
- * __RPC_URL__ is replaced at container startup with the actual public URL.
+ * The actual RPC transport is configured in wagmiConfig.tsx:
+ * - SSR (server): http://127.0.0.1:8545 (direct to Anvil)
+ * - Browser: /rpc (nginx proxies to Anvil)
  */
 export const cobuildersDevnet = defineChain({
   id: 13370,
@@ -14,7 +16,7 @@ export const cobuildersDevnet = defineChain({
   },
   rpcUrls: {
     default: {
-      http: ["__RPC_URL__"],
+      http: ["http://127.0.0.1:8545"],
     },
   },
   testnet: true,

@@ -12,6 +12,8 @@ RUN git clone --depth 1 https://github.com/scaffold-eth/scaffold-eth-2.git .
 # Copy our custom config and chain definition
 COPY scaffold-eth/scaffold.config.ts packages/nextjs/scaffold.config.ts
 COPY scaffold-eth/cobuildersChain.ts packages/nextjs/utils/scaffold-eth/cobuildersChain.ts
+COPY scaffold-eth/wagmiConfig.tsx packages/nextjs/services/web3/wagmiConfig.tsx
+COPY scaffold-eth/rpc-proxy-route.ts packages/nextjs/app/api/rpc/route.ts
 
 # Install dependencies and build
 RUN yarn install --immutable || yarn install

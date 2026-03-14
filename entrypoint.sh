@@ -4,28 +4,15 @@ set -e
 # Build Alchemy fork URL
 FORK_URL="https://${DEFAULT_CHAIN}.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
 
-# Determine public RPC URL
-# Railway provides RAILWAY_PUBLIC_DOMAIN automatically
-if [ -n "${RAILWAY_PUBLIC_DOMAIN}" ]; then
-  PUBLIC_RPC="https://${RAILWAY_PUBLIC_DOMAIN}/rpc"
-else
-  PUBLIC_RPC="http://localhost:${PORT}/rpc"
-fi
-
 echo "==> CoBuilders - ${NETWORK_NAME}"
 echo "==> Fork: ${DEFAULT_CHAIN} via Alchemy"
-echo "==> Public RPC: ${PUBLIC_RPC}"
 echo "==> Starting on port ${PORT}"
-
-# Inject RPC URL into the built Next.js files
-# The placeholder __RPC_URL__ was baked into the chain definition at build time
-find /app/.next -type f -name '*.js' -exec sed -i "s|__RPC_URL__|${PUBLIC_RPC}|g" {} +
 
 # Generate nginx config
 export PORT=${PORT}
 envsubst '${PORT}' < /etc/nginx/sites-available/default.template > /etc/nginx/sites-enabled/default
 
-# Start Anvil in background with custom chain ID (not 31337 to avoid SE-2 "local chain" detection)
+# Start Anvil in background
 anvil \
   --fork-url "${FORK_URL}" \
   --host 0.0.0.0 \

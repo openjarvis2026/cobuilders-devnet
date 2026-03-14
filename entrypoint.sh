@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 # Build Alchemy fork URL
@@ -13,11 +13,14 @@ sed -i \
   -e "s|__NETWORK_NAME__|${NETWORK_NAME}|g" \
   -e "s|__ALCHEMY_API_KEY__|${ALCHEMY_API_KEY}|g" \
   -e "s|__DEFAULT_CHAIN__|${DEFAULT_CHAIN}|g" \
-  /usr/share/nginx/html/index.html
+  /var/www/html/index.html
 
 # Generate nginx config from template
 export PORT=${PORT}
-envsubst '${PORT}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
+envsubst '${PORT}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/sites-enabled/default
+
+# Remove default nginx config that conflicts
+rm -f /etc/nginx/sites-enabled/default.bak
 
 # Start Anvil in background
 anvil \

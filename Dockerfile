@@ -14,6 +14,8 @@ COPY scaffold-eth/scaffold.config.ts packages/nextjs/scaffold.config.ts
 COPY scaffold-eth/cobuildersChain.ts packages/nextjs/utils/scaffold-eth/cobuildersChain.ts
 COPY scaffold-eth/wagmiConfig.tsx packages/nextjs/services/web3/wagmiConfig.tsx
 COPY scaffold-eth/rpc-proxy-route.ts packages/nextjs/app/api/rpc/route.ts
+COPY scaffold-eth/Faucet.tsx packages/nextjs/components/scaffold-eth/Faucet.tsx
+COPY scaffold-eth/blockexplorer-page.tsx packages/nextjs/app/blockexplorer/page.tsx
 
 # Install dependencies and build
 RUN yarn install --immutable || yarn install

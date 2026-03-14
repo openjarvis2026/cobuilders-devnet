@@ -17,7 +17,7 @@ anvil \
   --fork-url "${FORK_URL}" \
   --host 0.0.0.0 \
   --port 8545 \
-  --chain-id 13370 \
+  --chain-id 31337 \
   --block-time "${BLOCK_TIME}" \
   --accounts "${ACCOUNTS}" \
   --balance "${BALANCE}" \

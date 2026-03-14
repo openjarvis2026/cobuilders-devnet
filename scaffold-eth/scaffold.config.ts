@@ -18,8 +18,7 @@ const scaffoldConfig = {
 
   alchemyApiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || DEFAULT_ALCHEMY_API_KEY,
 
-  // Override RPC to use local Anvil directly (works for SSR)
-  // Browser requests also work via this since nginx proxies the public URL
+  // SSR uses localhost; browser transport is overridden in wagmiConfig to use /rpc
   rpcOverrides: {
     [cobuildersDevnet.id]: "http://127.0.0.1:8545",
   },

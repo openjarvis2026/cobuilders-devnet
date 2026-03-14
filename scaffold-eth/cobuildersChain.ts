@@ -1,13 +1,12 @@
 import { defineChain } from "viem";
 
 /**
- * CoBuilders Devnet chain definition.
- * The actual RPC transport is configured in wagmiConfig.tsx:
- * - SSR (server): http://127.0.0.1:8545 (direct to Anvil)
- * - Browser: /rpc (nginx proxies to Anvil)
+ * CoBuilders Devnet — uses chain ID 31337 (same as hardhat/anvil default)
+ * so SE-2 components treat it as a local dev chain.
+ * RPC is served via /rpc (nginx proxy to Anvil).
  */
 export const cobuildersDevnet = defineChain({
-  id: 13370,
+  id: 31337,
   name: "CoBuilders Devnet",
   nativeCurrency: {
     decimals: 18,

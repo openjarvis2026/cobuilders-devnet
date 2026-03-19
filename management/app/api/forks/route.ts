@@ -391,9 +391,11 @@ export async function POST(
         input: {
           projectId,
           name: `fork-${name}`,
-          source: {
-            image: process.env.RAILWAY_DEVNET_IMAGE ?? 'ghcr.io/cobuilders-xyz/cobuilders-devnet:latest',
-          },
+          // Use a Docker image if RAILWAY_DEVNET_IMAGE is set, otherwise
+          // build from the GitHub repo via its Dockerfile (railway.toml).
+          source: process.env.RAILWAY_DEVNET_IMAGE
+            ? { image: process.env.RAILWAY_DEVNET_IMAGE }
+            : { repo: process.env.RAILWAY_DEVNET_REPO ?? 'CoBuilders-xyz/cobuilders-devnet' },
         },
       },
       { operation: 'ServiceCreate', projectId, name }

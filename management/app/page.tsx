@@ -17,9 +17,13 @@
 
 import { useForks } from '@/hooks/useForks';
 import { ForkCard } from '@/components/ForkCard';
+import { CreateForkButton } from '@/components/CreateForkButton';
 
 export default function Page() {
   const { forks, loading, error, refresh } = useForks();
+
+  // Refresh the fork list after a new fork is created
+  const handleForkCreated = refresh;
 
   return (
     <>
@@ -81,37 +85,43 @@ export default function Page() {
               </p>
             </div>
 
-            {/* AC-MDU-001.6: Manual refresh button */}
-            <button
-              onClick={refresh}
-              disabled={loading}
-              aria-label="Refresh fork list"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                border: '1px solid #2a2a2a',
-                backgroundColor: loading ? '#1a1a1a' : '#1e1e1e',
-                color: loading ? '#555' : '#aaa',
-                fontSize: '14px',
-                fontWeight: 500,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                transition: 'background-color 0.15s, color 0.15s',
-              }}
-            >
-              <span
+            {/* Header action buttons */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {/* AC-MDU-001.6: Manual refresh button */}
+              <button
+                onClick={refresh}
+                disabled={loading}
+                aria-label="Refresh fork list"
                 style={{
-                  display: 'inline-block',
-                  animation: loading ? 'spin 0.8s linear infinite' : 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid #2a2a2a',
+                  backgroundColor: loading ? '#1a1a1a' : '#1e1e1e',
+                  color: loading ? '#555' : '#aaa',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.15s, color 0.15s',
                 }}
-                aria-hidden="true"
               >
-                ↻
-              </span>
-              Refresh
-            </button>
+                <span
+                  style={{
+                    display: 'inline-block',
+                    animation: loading ? 'spin 0.8s linear infinite' : 'none',
+                  }}
+                  aria-hidden="true"
+                >
+                  ↻
+                </span>
+                Refresh
+              </button>
+
+              {/* AC-MDU-002.1: Create Fork button */}
+              <CreateForkButton onForkCreated={handleForkCreated} />
+            </div>
           </div>
         </header>
 

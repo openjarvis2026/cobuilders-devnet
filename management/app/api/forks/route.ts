@@ -42,7 +42,7 @@ interface GetForksQueryResponse {
 
 const GET_FORKS_QUERY = `
   query GetForks($projectId: String!) {
-    deployments(projectId: $projectId) {
+    deployments(input: { projectId: $projectId }) {
       edges {
         node {
           id

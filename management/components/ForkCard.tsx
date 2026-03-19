@@ -50,15 +50,18 @@ interface ForkCardProps {
 
 export function ForkCard({ fork }: ForkCardProps) {
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
 
   const handleCopyRpc = useCallback(async () => {
     if (!fork.rpcUrl) return;
+    setCopyError(false);
     try {
       await navigator.clipboard.writeText(fork.rpcUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for environments without clipboard API
+      setCopyError(true);
+      setTimeout(() => setCopyError(false), 2000);
     }
   }, [fork.rpcUrl]);
 
@@ -88,7 +91,6 @@ export function ForkCard({ fork }: ForkCardProps) {
           style={{
             fontSize: '16px',
             fontWeight: 600,
-            color: '#ededed',
             margin: 0,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -97,7 +99,23 @@ export function ForkCard({ fork }: ForkCardProps) {
           }}
           title={fork.name}
         >
-          {fork.name}
+          {fork.dashboardUrl ? (
+            <a
+              href={fork.dashboardUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: '#ededed',
+                textDecoration: 'none',
+              }}
+              onMouseEnter={e => ((e.target as HTMLAnchorElement).style.color = '#a78bfa')}
+              onMouseLeave={e => ((e.target as HTMLAnchorElement).style.color = '#ededed')}
+            >
+              {fork.name}
+            </a>
+          ) : (
+            <span style={{ color: '#ededed' }}>{fork.name}</span>
+          )}
         </h2>
         <StatusBadge status={fork.status} />
       </div>
@@ -217,32 +235,53 @@ export function ForkCard({ fork }: ForkCardProps) {
               </span>
               <button
                 onClick={handleCopyRpc}
-                title="Copy RPC URL"
-                aria-label="Copy RPC URL"
+                title={copied ? 'Copied!' : 'Copy RPC endpoint'}
+                aria-label="Copy RPC endpoint"
                 style={{
                   flexShrink: 0,
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: '28px',
+                  gap: '4px',
                   height: '28px',
+                  padding: copied ? '0 8px' : '0',
+                  width: copied ? 'auto' : '28px',
                   borderRadius: '6px',
                   border: '1px solid #2a2a2a',
                   backgroundColor: copied ? 'rgba(34,197,94,0.12)' : '#1e1e1e',
                   color: copied ? '#22c55e' : '#888',
                   cursor: 'pointer',
                   fontSize: '12px',
-                  transition: 'background-color 0.15s, color 0.15s',
-                  padding: 0,
+                  transition: 'background-color 0.15s, color 0.15s, width 0.15s, padding 0.15s',
+                  whiteSpace: 'nowrap',
                 }}
               >
-                {copied ? '✓' : '⎘'}
+                {copied ? (
+                  <>
+                    <span aria-hidden="true">✓</span>
+                    <span>Copied!</span>
+                  </>
+                ) : '⎘'}
               </button>
             </div>
           ) : (
             <span style={{ fontSize: '13px', color: '#555' }}>—</span>
           )}
         </div>
+        {/* Clipboard error message */}
+        {copyError && (
+          <p
+            role="alert"
+            style={{
+              fontSize: '12px',
+              color: '#f87171',
+              margin: 0,
+              paddingLeft: '68px',
+            }}
+          >
+            Unable to copy. Please copy manually.
+          </p>
+        )}
       </div>
     </article>
   );

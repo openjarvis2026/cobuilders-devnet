@@ -131,3 +131,22 @@ export interface CreateForkRequest {
   alchemyApiKey?: string;
   networkName?: string;
 }
+
+// Fork status for the management dashboard
+export type ForkStatus = 'active' | 'deploying' | 'failed';
+
+// Fork list item returned by GET /api/forks
+export interface ForkListItem {
+  id: string;
+  name: string;
+  chain: string;
+  createdAt: string;
+  dashboardUrl: string;
+  rpcUrl: string;
+  status: ForkStatus;
+}
+
+// Response from GET /api/forks
+export interface ForksApiResponse {
+  forks: ForkListItem[];
+}

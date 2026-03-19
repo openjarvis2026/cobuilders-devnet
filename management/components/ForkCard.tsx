@@ -5,12 +5,15 @@
  *
  * AC-MDU-001.2: Display fork name, chain, creation time, status, dashboard URL,
  *               and RPC URL with a copy button.
+ * AC-MDU-004.1: Display a delete button for each fork.
+ * AC-MDU-004.4: Show loading state on the card while deletion is in progress.
  */
 
 'use client';
 
 import { useState, useCallback } from 'react';
 import { StatusBadge } from './StatusBadge';
+import { DeleteForkButton } from './DeleteForkButton';
 import type { ForkListItem } from '@/lib/types';
 
 const CHAIN_LABELS: Record<string, string> = {
@@ -46,9 +49,11 @@ function formatRelativeTime(isoDate: string): string {
 
 interface ForkCardProps {
   fork: ForkListItem;
+  /** Called when the user confirms deletion. Should throw on failure. */
+  onDelete?: () => Promise<void>;
 }
 
-export function ForkCard({ fork }: ForkCardProps) {
+export function ForkCard({ fork, onDelete }: ForkCardProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopyRpc = useCallback(async () => {
@@ -75,7 +80,7 @@ export function ForkCard({ fork }: ForkCardProps) {
         transition: 'border-color 0.15s',
       }}
     >
-      {/* Header: name + status */}
+      {/* Header: name + status + delete button */}
       <div
         style={{
           display: 'flex',
@@ -99,7 +104,20 @@ export function ForkCard({ fork }: ForkCardProps) {
         >
           {fork.name}
         </h2>
-        <StatusBadge status={fork.status} />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            flexShrink: 0,
+          }}
+        >
+          <StatusBadge status={fork.status} />
+          {/* AC-MDU-004.1: Delete button */}
+          {onDelete && (
+            <DeleteForkButton forkName={fork.name} onDelete={onDelete} />
+          )}
+        </div>
       </div>
 
       {/* Metadata: chain + creation time */}

@@ -7,6 +7,8 @@
  * AC-MDU-001.6: Provide manual refresh capability.
  * AC-MDU-006.4: Auto-refresh every 10 seconds when any fork is deploying.
  * AC-MDU-006.5: Stop auto-refresh when all forks are active or failed.
+ * AC-MDU-004.4: Provide deleteFork to call DELETE /api/forks/:id.
+ * AC-MDU-004.5: Remove fork from list immediately on successful deletion.
  */
 
 'use client';
@@ -21,6 +23,15 @@ export interface UseForksResult {
   loading: boolean;
   error: string | null;
   refresh: () => void;
+  /**
+   * Deletes a fork by ID. Resolves with the success message on success.
+   * Rejects with an Error containing the failure message on failure.
+   * On success the fork is immediately removed from the local list.
+   *
+   * AC-FM-003.1 / AC-FM-003.5: Calls DELETE /api/forks/:id and removes fork
+   * from subsequent list state.
+   */
+  deleteFork: (id: string) => Promise<string>;
 }
 
 export function useForks(): UseForksResult {
@@ -86,5 +97,22 @@ export function useForks(): UseForksResult {
     };
   }, [forks, fetchForks]);
 
-  return { forks, loading, error, refresh };
+  /**
+   * AC-MDU-004.4 / AC-FM-003.1: Send DELETE request and update local state.
+   */
+  const deleteFork = useCallback(async (id: string): Promise<string> => {
+    const response = await fetch(`/api/forks/${id}`, { method: 'DELETE' });
+    const data = await response.json() as { success: boolean; message: string };
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message ?? 'Unable to delete fork. Try again later.');
+    }
+
+    // AC-MDU-004.5 / AC-FM-003.5: Immediately remove fork from local list
+    setForks((prev) => prev.filter((f) => f.id !== id));
+
+    return data.message;
+  }, []);
+
+  return { forks, loading, error, refresh, deleteFork };
 }

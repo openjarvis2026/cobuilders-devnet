@@ -10,20 +10,59 @@
  * AC-MDU-001.4: Empty state message.
  * AC-MDU-001.5: Error state message.
  * AC-MDU-001.6: Manual refresh button.
+ * AC-MDU-004.5: Show success toast after fork is deleted.
+ * AC-MDU-004.6: Show error toast when deletion fails.
  * AC-MDU-007.1: Optimized for desktop/laptop (min 1024px).
  * AC-MDU-007.2: Grid layout collapsing to single column on narrow screens.
  * AC-MDU-007.3: Adequate sizing for mouse/trackpad interaction.
  */
 
+import { useState, useCallback, useRef } from 'react';
 import { useForks } from '@/hooks/useForks';
 import { ForkCard } from '@/components/ForkCard';
 
+interface Toast {
+  id: number;
+  type: 'success' | 'error';
+  message: string;
+}
+
 export default function Page() {
-  const { forks, loading, error, refresh } = useForks();
+  const { forks, loading, error, refresh, deleteFork } = useForks();
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const toastIdRef = useRef(0);
+
+  const addToast = useCallback((type: Toast['type'], message: string) => {
+    const id = ++toastIdRef.current;
+    setToasts((prev) => [...prev, { id, type, message }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  }, []);
+
+  const handleDelete = useCallback(
+    (fork: { id: string; name: string }) => async () => {
+      try {
+        // AC-MDU-004.4: deleteFork sends the DELETE request
+        await deleteFork(fork.id);
+        // AC-MDU-004.5: Show success message after removal
+        addToast('success', `Fork '${fork.name}' deleted`);
+      } catch (err) {
+        // AC-MDU-004.6: Show error message, fork stays in list
+        const msg =
+          err instanceof Error
+            ? err.message
+            : 'Unable to delete fork. Try again later.';
+        addToast('error', msg);
+        throw err; // re-throw so DeleteForkButton can reset its loading state
+      }
+    },
+    [deleteFork, addToast]
+  );
 
   return (
     <>
-      {/* Spinner keyframe animation injected once */}
+      {/* Keyframe animations injected once */}
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
@@ -32,7 +71,59 @@ export default function Page() {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.4; }
         }
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(100%); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
       `}</style>
+
+      {/* AC-MDU-004.5 / AC-MDU-004.6: Toast notifications */}
+      <div
+        aria-live="polite"
+        aria-atomic="false"
+        style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          zIndex: 2000,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          pointerEvents: 'none',
+        }}
+      >
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            role="status"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '12px 16px',
+              borderRadius: '10px',
+              border: `1px solid ${
+                toast.type === 'success'
+                  ? 'rgba(34,197,94,0.35)'
+                  : 'rgba(239,68,68,0.35)'
+              }`,
+              backgroundColor:
+                toast.type === 'success'
+                  ? 'rgba(34,197,94,0.12)'
+                  : 'rgba(239,68,68,0.12)',
+              color: toast.type === 'success' ? '#22c55e' : '#ef4444',
+              fontSize: '14px',
+              fontWeight: 500,
+              maxWidth: '360px',
+              animation: 'slideIn 0.2s ease-out',
+              pointerEvents: 'auto',
+            }}
+          >
+            <span aria-hidden="true">{toast.type === 'success' ? '✓' : '✕'}</span>
+            {toast.message}
+          </div>
+        ))}
+      </div>
 
       <div
         style={{
@@ -275,7 +366,11 @@ export default function Page() {
                 }}
               >
                 {forks.map((fork) => (
-                  <ForkCard key={fork.id} fork={fork} />
+                  <ForkCard
+                    key={fork.id}
+                    fork={fork}
+                    onDelete={handleDelete(fork)}
+                  />
                 ))}
               </div>
             </>
